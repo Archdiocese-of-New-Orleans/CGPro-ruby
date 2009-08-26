@@ -76,7 +76,8 @@ context "CommuniGate CLI library from Ruby to CGP" do
     
     it "should convert ruby Hashes to CGP dictionaries" do
       input = {:keysymbol => "string", :secondsymbol => "long string"}
-      CommuniGate::CliParser.to_cgp(input).should include "secondsymbol=\"long string\";"
+      CommuniGate::CliParser.to_cgp(input).should \ 
+        include "secondsymbol=\"long string\";"
       CommuniGate::CliParser.to_cgp(input).should include "keysymbol=string;"
     end
     

@@ -1,5 +1,6 @@
 require 'socket'
 require 'digest/md5'
+require 'communigate/cli_parser'
 require 'communigate/general_exception'
 
 module CommuniGate

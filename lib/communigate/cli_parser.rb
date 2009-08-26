@@ -1,6 +1,7 @@
 require 'communigate/data_exception'
 require 'communigate/data_block'
 require 'ipaddr'
+require 'time'
 
 module CommuniGate
   class CliParser
@@ -48,7 +49,7 @@ module CommuniGate
       end
     end
 
-    def ruby_to_cg (output = @data)
+    def ruby_to_cg(output = @data)
       ret_str = String.new
       if output.class == String && output.to_s.empty?
         return '""'
@@ -184,7 +185,7 @@ module CommuniGate
           @marker += 1
           break
         else
-          ret_array.push(_parse_output)
+          ret_array.push(parse_cli)
           _skip_ws
           if @data[@marker, 1] == ','
             @marker += 1
@@ -211,7 +212,7 @@ module CommuniGate
           _raise_data_exp('=') unless @data[@marker, 1] == '='
           @marker += 1
           _skip_ws
-          ret_hash[key] = _parse_output
+          ret_hash[key] = parse_cli
           _raise_data_exp(';') unless @data[@marker, 1] == ';'
           @marker += 1
         end
