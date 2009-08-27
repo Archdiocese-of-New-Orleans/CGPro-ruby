@@ -146,16 +146,17 @@ module CommuniGate
         c = @data[@marker, 1]
         if quoted #quoted string
           if c == '\\'
-            if /(?:\"|\\|\d\d\d)/.match(@data[@marker, 3])
+            if @data[@marker, 2] =~ /\\\"/
+              c = "\""
+              @marker += 1
+            elsif @data[@marker + 1, 3] =~ /(?:\\|\d\d\d)/
               @marker += 1
               c = @data[@marker, 3]
-              if /\d\d\d/.match(c)
+              if c =~ /\d\d\d/
                 @marker += 2
-                c=c.to_i.chr
-              elsif c == "\""
-                c += "\\\""
+                c = c.to_i.chr
               else
-                c='\\'+c[0,1]
+                c = '\\'+c[0,1]
               end
             end
           elsif c == '"'

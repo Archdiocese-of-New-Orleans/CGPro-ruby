@@ -1,4 +1,5 @@
 require File.dirname(__FILE__) + '/spec_helper'
+require 'date'
 
 context "CommuniGate CLI library from Ruby to CGP" do
   describe :numerics do    
@@ -40,16 +41,16 @@ context "CommuniGate CLI library from Ruby to CGP" do
   end
   
   describe :time do
-    it "should convert Time objects to CGP timestamps" do
-      t = DateTime.new(2002, 10, 20, 07, 45, 30)
-      CommuniGate::CliParser.to_cgp(t).should == "#T20-10-2002_07:45:30"
-    end
-    
     it "should convert DateTime objects to CGP timestamps" do
       t = Time.local(2002, 10, 20, 07, 45, 30)
       CommuniGate::CliParser.to_cgp(t).should == "#T20-10-2002_07:45:30"
     end
-    
+
+    it "should convert Time objects to CGP timestamps" do
+      t = DateTime.new(2002, 10, 20, 07, 45, 30)
+      CommuniGate::CliParser.to_cgp(t).should == "#T20-10-2002_07:45:30"
+    end
+        
     it "should convert Time objects to CGP dates" do
       t = Date.new(2002, 10, 20)
       CommuniGate::CliParser.to_cgp(t).should == "#T20-10-2002"
@@ -76,8 +77,7 @@ context "CommuniGate CLI library from Ruby to CGP" do
     
     it "should convert ruby Hashes to CGP dictionaries" do
       input = {:keysymbol => "string", :secondsymbol => "long string"}
-      CommuniGate::CliParser.to_cgp(input).should \ 
-        include "secondsymbol=\"long string\";"
+      CommuniGate::CliParser.to_cgp(input).should include "secondsymbol=\"long string\";"
       CommuniGate::CliParser.to_cgp(input).should include "keysymbol=string;"
     end
     

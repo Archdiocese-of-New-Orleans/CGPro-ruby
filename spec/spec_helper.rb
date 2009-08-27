@@ -1,4 +1,9 @@
-# ---- requirements
-$LOAD_PATH << File.expand_path("../lib", File.dirname(__FILE__))
+$LOAD_PATH.unshift(File.dirname(__FILE__))
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+require 'communigate/cli'
+require 'spec'
+require 'spec/autorun'
 
-require 'communigate/cli_parser'
+Spec::Runner.configure do |config|
+  
+end
