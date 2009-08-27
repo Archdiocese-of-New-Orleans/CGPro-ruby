@@ -28,8 +28,8 @@ task :default => :spec
 
 begin
   require 'jeweler'
-  project_name = 'communigate'
   Jeweler::Tasks.new do |gem|
+    gem.name = 'communigate'
     gem.summary = "Interact with CommuniGatePro CLI interface"    
     gem.description = %Q{Library to interact with CommuniGate Pro CLI interface}
     gem.email = "Ricardo.Ruiz@Locaweb.com.br"

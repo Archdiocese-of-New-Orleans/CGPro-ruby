@@ -5,15 +5,17 @@
 
 Gem::Specification.new do |s|
   s.name = %q{communigate}
-  s.version = "0.1.0"
+  s.version = "0.3.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Ricardo Hermida Ruiz"]
-  s.date = %q{2009-08-26}
-  s.email = %q{ricardo.ruiz@locaweb.com.br}
+  s.date = %q{2009-08-27}
+  s.description = %q{Library to interact with CommuniGate Pro CLI interface}
+  s.email = %q{Ricardo.Ruiz@Locaweb.com.br}
   s.files = [
     "Rakefile",
      "VERSION",
+     "communigate.gemspec",
      "lib/communigate/cli.rb",
      "lib/communigate/cli_parser.rb",
      "lib/communigate/data_block.rb",
@@ -23,7 +25,7 @@ Gem::Specification.new do |s|
      "spec/ruby_to_cgp_spec.rb",
      "spec/spec_helper.rb"
   ]
-  s.homepage = %q{http://github.com/rhruiz/communigate}
+  s.homepage = %q{http://github.com/rhruiz/communigate-cli}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.5}
@@ -39,8 +41,11 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
+      s.add_development_dependency(%q<rspec>, [">= 0"])
     else
+      s.add_dependency(%q<rspec>, [">= 0"])
     end
   else
+    s.add_dependency(%q<rspec>, [">= 0"])
   end
 end
