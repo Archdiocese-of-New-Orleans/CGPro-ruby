@@ -42,7 +42,7 @@ context "CommuniGate CLI library from Ruby to CGP" do
   
   describe :time do
     it "should convert DateTime objects to CGP timestamps" do
-      t = Time.local(2002, 10, 20, 07, 45, 30)
+      t = Time.utc(2002, 10, 20, 07, 45, 30)
       CommuniGate::CliParser.to_cgp(t).should == "#T20-10-2002_07:45:30"
     end
 
@@ -54,6 +54,17 @@ context "CommuniGate CLI library from Ruby to CGP" do
     it "should convert Time objects to CGP dates" do
       t = Date.new(2002, 10, 20)
       CommuniGate::CliParser.to_cgp(t).should == "#T20-10-2002"
+    end
+  
+    it "should convert a local DateTime object to CGP timestamp in UTC/GMT" do
+      t = DateTime.new(2012, 12, 21, 15, 35, 40, Rational(-3, 24))
+      CommuniGate::CliParser.to_cgp(t).should == "#T21-12-2012_18:35:40"
+    end
+    
+    it "should convert a local Time object to CGP timestamp in UTC/GMT" do
+      t = Time.now
+      expected = t.getutc.strftime("#T%d-%m-%Y_%H:%M:%S")
+      CommuniGate::CliParser.to_cgp(t).should == expected
     end
     
   end
@@ -89,7 +100,7 @@ context "CommuniGate CLI library from Ruby to CGP" do
         "d is longer" => ["list", "of", "strings"],
         :e_is_a_hash => { :key => "value" },
         :f => %w(A List Apart),
-        :h => Time.local(2012, 01, 23, 10, 45, 20)
+        :h => Time.utc(2012, 01, 23, 10, 45, 20)
       }
       expected_parts = [
         "a=string;",

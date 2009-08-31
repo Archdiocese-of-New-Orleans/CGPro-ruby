@@ -41,7 +41,6 @@ context "CommuniGate CLI library from CGP to Ruby" do
       t = Time.utc(2002, 10, 20)
       CommuniGate::CliParser.to_ruby("#T20-10-2002").should == t
     end
-  
   end
 
   describe :arrays do  

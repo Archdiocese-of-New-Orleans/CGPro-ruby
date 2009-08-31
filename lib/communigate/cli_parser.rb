@@ -63,8 +63,10 @@ module CommuniGate
         return ret_str + ')'
       elsif output.class == IPAddr
         return "#I[#{output.to_s}]"
-      elsif output.class == Time || output.class == DateTime
-        return output.strftime(DATETIME_FORMAT)
+      elsif output.class == Time
+        return output.getutc.strftime(DATETIME_FORMAT)
+      elsif output.class == DateTime
+        return output.new_offset(0).strftime(DATETIME_FORMAT)
       elsif output.class == Date
         return output.strftime(DATE_FORMAT)
       elsif output.is_a?(Numeric)
