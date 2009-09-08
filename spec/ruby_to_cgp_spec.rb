@@ -21,6 +21,8 @@ context "CommuniGate CLI library from Ruby to CGP" do
     it "should convert IPAddr objects to CGP ips" do
       CommuniGate::CliParser.to_cgp(IPAddr.new('192.168.1.1')).should ==
         '#I[192.168.1.1]'
+      CommuniGate::CliParser.to_cgp([IPAddr.new('10.125.10.40'), 25]).
+        should == '#I[10.125.10.40]:25'
     end
   end
   
@@ -88,8 +90,10 @@ context "CommuniGate CLI library from Ruby to CGP" do
     
     it "should convert ruby Hashes to CGP dictionaries" do
       input = {:keysymbol => "string", :secondsymbol => "long string"}
-      CommuniGate::CliParser.to_cgp(input).should include "secondsymbol=\"long string\";"
-      CommuniGate::CliParser.to_cgp(input).should include "keysymbol=string;"
+      CommuniGate::CliParser.to_cgp(input).
+        should include "secondsymbol=\"long string\";"
+      CommuniGate::CliParser.to_cgp(input).
+        should include "keysymbol=string;"
     end
     
     it "should convert complex ruby Hashes to CGP dictionaries" do

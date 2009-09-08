@@ -40,9 +40,9 @@ module CommuniGate
           @marker += 2
           return _ruby_time
         end
-        if @data[@marker, 2] =~ /#I/
-          @marker += 2
-          return _ruby_string
+        if @data[@marker, 3] =~ /#I\[/
+          @marker += 3
+          return _ruby_ip
         end
       else
         return _ruby_string
@@ -57,6 +57,8 @@ module CommuniGate
         ret_str << '{'
         output.each { |key,value| ret_str << ruby_to_cg(key) << '=' << ruby_to_cg(value) << ';' }
         return ret_str + '}'
+      elsif output.class == Array && output.length == 2 && output[0].class == IPAddr
+        ret_str << "#I[#{output[0].to_s}]:#{output[1]}"
       elsif output.class == Array
         ret_str << '('
         output.each_index { |idx| ret_str << ',' if idx > 0; ret_str << ruby_to_cg(output[idx]) }
@@ -100,6 +102,29 @@ module CommuniGate
     def _skip_ws
       while @data[@marker, 1] =~ /\s/
         @marker += 1
+      end
+    end
+
+    def _ruby_ip
+      addr = ""
+      while @marker < @data.length
+        c = @data[@marker, 1]
+        if c == ']'
+          if @marker < @data.length && @data[@marker+1, 1] == ':'
+            @marker += 2
+            port = _ruby_numeric
+            return [IPAddr.new(addr), port]
+          else
+            return IPAddr.new(addr)
+          end
+        else
+          if c =~ /[\d\.]/
+            addr += c
+          else
+            _raise_data_exp('[0-9.]')
+          end
+          @marker += 1
+        end
       end
     end
 

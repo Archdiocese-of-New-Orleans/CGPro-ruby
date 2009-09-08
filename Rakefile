@@ -23,23 +23,7 @@ task :specdoc do
   system("spec #{options} #{files}")
 end
 
-task :spec => :check_dependencies
 task :default => :spec
-
-begin
-  require 'jeweler'
-  Jeweler::Tasks.new do |gem|
-    gem.name = 'communigate'
-    gem.summary = "Interact with CommuniGatePro CLI interface"    
-    gem.description = %Q{Library to interact with CommuniGate Pro CLI interface}
-    gem.email = "Ricardo.Ruiz@Locaweb.com.br"
-    gem.homepage = "http://github.com/rhruiz/communigate-cli"
-    gem.authors = ["Ricardo Hermida Ruiz"]
-    gem.add_development_dependency "rspec"
-  end
-rescue LoadError
-  puts "Jeweler, or one of its dependencies, is not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
-end
 
 require 'rake/rdoctask'
 Rake::RDocTask.new do |rdoc|

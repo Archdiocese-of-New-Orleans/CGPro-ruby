@@ -4,7 +4,8 @@ require 'date'
 context "CommuniGate CLI library from CGP to Ruby" do
   describe :numerics do    
     it "should convert CGP integer to Ruby numeric" do
-      CommuniGate::CliParser.to_ruby('#-3.14159') == -3.14159
+      CommuniGate::CliParser.to_ruby('#-3.14159').should == -3.14159
+      CommuniGate::CliParser.to_ruby('#12354').should == 12354
     end
   end
 
@@ -12,6 +13,15 @@ context "CommuniGate CLI library from CGP to Ruby" do
     it "should convert to CGP escaped" do
       CommuniGate::CliParser.to_ruby(%q{"a\009string\009with\009tabs\000"}).
         should == "a\tstring\twith\ttabs\0"
+    end
+  end
+
+  describe "IP Addresses" do
+    it "should convert CGP ips to IPAddr objects" do
+      CommuniGate::CliParser.to_ruby('#I[192.168.1.1]').
+        should == IPAddr.new('192.168.1.1')
+      CommuniGate::CliParser.to_ruby('#I[172.16.104.10]:587').should ==
+        [IPAddr.new('172.16.104.10'), 587]
     end
   end
 
@@ -28,6 +38,8 @@ context "CommuniGate CLI library from CGP to Ruby" do
     it "should convert quoted strings to escaped quoted strings" do
       CommuniGate::CliParser.to_ruby(%q{"a \"quoted\" string"}).should ==
         "a \"quoted\" string"
+      CommuniGate::CliParser.to_ruby(%q{"a \"quoted\" string"}).should ==
+        %q{a "quoted" string}
     end
   end
 
@@ -50,8 +62,10 @@ context "CommuniGate CLI library from CGP to Ruby" do
 
     it "should convert ruby arrays to CGP arrays" do 
       CommuniGate::CliParser.to_ruby("(#1)").should == [1]
-      CommuniGate::CliParser.to_ruby('(#-11, string, "longer string")') ==
-        [-11, "string", "longer string"]
+      CommuniGate::CliParser.to_ruby('(#-11, string, "longer string")').
+        should == [-11, "string", "longer string"]
+      CommuniGate::CliParser.to_ruby('(three, simple, strings)').
+        should == %w(three simple strings)
     end
   end
 
