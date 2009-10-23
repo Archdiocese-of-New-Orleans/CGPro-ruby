@@ -1,0 +1,6 @@
+h1. Credits
+
+This is a fork of William Pratt's ruby-cg library available at http://rubyforge.org/projects/ruby-cg/
+
+I've separated the CGPro data formats parser/generator into a separated file and added specs for that
+
