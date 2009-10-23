@@ -5,22 +5,22 @@ require 'spec/rake/spectask'
 
 desc "Run rspec with progress format"
 Spec::Rake::SpecTask.new(:spec) do |spec|
-  spec.libs << 'lib' << 'spec'
-  spec.spec_files = FileList['spec/**/*_spec.rb']
+  spec.libs << 'lib' << 'lib/specifications'
+  spec.spec_files = FileList['lib/specifications/**/*_spec.rb']
 end
 
 desc "Run all examples with RCov"
 Spec::Rake::SpecTask.new(:rcov) do |spec|
-  spec.libs << 'lib' << 'spec'
-  spec.pattern = 'spec/**/*_spec.rb'
+  spec.libs << 'lib' << 'lib/specifications'
+  spec.pattern = 'lib/specifications/**/*_spec.rb'
   spec.rcov = true
 end
 
 desc "Run rspec with specdoc format"
-task :specdoc do
-  options = "--colour --format specdoc --loadby --reverse"
-  files = FileList['spec/**/*_spec.rb']
-  system("spec #{options} #{files}")
+Spec::Rake::SpecTask.new(:specdoc) do |spec|
+  spec.libs << 'lib' << 'lib/specifications'
+  spec.spec_opts = ["--colour --format specdoc --loadby --reverse"]
+  spec.spec_files = FileList['lib/specifications/**/*_spec.rb']
 end
 
 task :default => :spec
