@@ -51,41 +51,38 @@ module CommuniGate
 
     def ruby_to_cg(output = @data)
       ret_str = String.new
-      if output.class == String && output.to_s.empty?
-        return '""'
-      elsif output.class == Hash
-        ret_str << '{'
-        output.each { |key,value| ret_str << ruby_to_cg(key) << '=' << ruby_to_cg(value) << ';' }
-        return ret_str + '}'
-      elsif output.class == Array && output.length == 2 && output[0].class == IPAddr
+      case
+      when output.class == String && output.to_s.empty?
+        '""'
+      when output.class == Hash
+        ret_str << output.inject('{') do |ret, current|
+          ret << ruby_to_cg(current[0]) << '=' << ruby_to_cg(current[1]) << ';' 
+        end << '}'
+      when output.class == Array && output.length == 2 && output[0].class == IPAddr
         ret_str << "#I[#{output[0].to_s}]:#{output[1]}"
-      elsif output.class == Array
-        ret_str << '('
-        output.each_index { |idx| ret_str << ',' if idx > 0; ret_str << ruby_to_cg(output[idx]) }
-        return ret_str + ')'
-      elsif output.class == IPAddr
-        return "#I[#{output.to_s}]"
-      elsif output.class == Time
-        return output.getutc.strftime(DATETIME_FORMAT)
-      elsif output.class == DateTime
-        return output.new_offset(0).strftime(DATETIME_FORMAT)
-      elsif output.class == Date
-        return output.strftime(DATE_FORMAT)
-      elsif output.is_a?(Numeric)
-        return "##{output.to_s}"
-      elsif output.is_a?(CommuniGate::DataBlock)
-        return "[#{output.datablock}]"
+      when output.class == Array
+        ret_str << '(' << output.map { |e| ruby_to_cg(e) }.join(',') << ')'
+      when output.class == IPAddr
+        "#I[#{output.to_s}]"
+      when output.class == Time
+        output.getutc.strftime(DATETIME_FORMAT)
+      when output.class == DateTime
+        output.new_offset(0).strftime(DATETIME_FORMAT)
+      when output.class == Date
+        output.strftime(DATE_FORMAT)
+      when output.is_a?(Numeric)
+        "##{output.to_s}"
+      when output.is_a?(CommuniGate::DataBlock)
+        "[#{output.datablock}]"
       else
         output = output.to_s if output.class == Symbol
         if output =~ /^[A-Za-z0-9]+$/
-          return output
-        end
-      
-        if output =~ /([[:cntrl:]])/
+          output
+        elsif output =~ /([[:cntrl:]])/
           output.gsub!(/([[:cntrl:]])/m){ |i| "\\" + i[0].to_s.rjust(3,"0"); }
-          return %Q{"#{output}"}
+          %Q{"#{output}"}
         else
-          return output.inspect
+          output.inspect
         end
       end
     end
