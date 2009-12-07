@@ -21,9 +21,9 @@ Gem::Specification.new do |s|
      "lib/communigate/data_block.rb",
      "lib/communigate/data_exception.rb",
      "lib/communigate/general_exception.rb",
-     "spec/cgp_to_ruby_spec.rb",
-     "spec/ruby_to_cgp_spec.rb",
-     "spec/spec_helper.rb"
+     "lib/specifications/cgp_to_ruby_spec.rb",
+     "lib/specifications/ruby_to_cgp_spec.rb",
+     "lib/specifications/spec_helper.rb"
   ]
   s.homepage = %q{http://github.com/rhruiz/communigate-cli}
   s.rdoc_options = ["--charset=UTF-8"]
@@ -31,9 +31,9 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.5}
   s.summary = %q{Interact with CommuniGatePro CLI interface}
   s.test_files = [
-    "spec/cgp_to_ruby_spec.rb",
-     "spec/ruby_to_cgp_spec.rb",
-     "spec/spec_helper.rb"
+    "lib/specifications/cgp_to_ruby_spec.rb",
+     "lib/specifications/ruby_to_cgp_spec.rb",
+     "lib/specifications/spec_helper.rb"
   ]
 
   if s.respond_to? :specification_version then
