@@ -124,6 +124,10 @@ module CommuniGate
     #method missing is used to call all api methods. If an unsupported method is called, a CgGeneralException to be raised. 
     #Additionally, a CgDataException will be raised if there is an error in parsing data returned from the Communigate server.
     def method_missing(called,*args)
+      # alex 2013.03.05: a little bit of cleanup to make it useful for for > 1 call
+      @data = String.new
+      @_data_waiting = false
+      # cleanup end
       send_str = called.to_s.gsub("_", "")
       args.each { |arg| send_str += " #{CommuniGate::CliParser.to_cgp(arg)}"} unless args.empty?
       _reconnect if Time.new > (@_connected + 295) #timeout is 5 mins so this gives us 5 secs of error room

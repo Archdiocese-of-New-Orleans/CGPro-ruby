@@ -126,6 +126,14 @@ module CommuniGate
     end
 
     def _ruby_time
+      if @data[@marker, 4] == 'PAST'
+        @marker += 4
+        return Time.gm(1980)
+      end
+      if @data[@marker, 6] == 'FUTURE'
+        @marker += 6
+        return Time.gm(2100)
+      end 
       remain_len = 10 #date w/ no time
       if @data[@marker + remain_len, 1] == '_'
         remain_len = 19
@@ -192,13 +200,14 @@ module CommuniGate
               break
             end
           end
-        elsif /[-a-zA-Z0-9\x80-\xff_\.\@\!\#\%\:]/.match(c)
+        elsif Regexp.new('[-a-zA-Z0-9\x80-\xff_\.\@\!\#\%\:]', nil, 'n').match(c)
         else
           break
         end
         ret_string << c
         @marker += 1
       end
+      ret_string.force_encoding('utf-8')
       return ret_string
     end
 

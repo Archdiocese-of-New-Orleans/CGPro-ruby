@@ -1,6 +1,6 @@
 h1. Credits
 
-This is a fork of William Pratt's ruby-cg library available at http://rubyforge.org/projects/ruby-cg/
+This fork of ruby-cg (originally by William Pratt, later by Ricardo Ruiz) is modified to support
+ruby 1.9 unicode, fix a few bugs etc.
 
-I've separated the CGPro data formats parser/generator into a separated file and added specs for that
-
+Tests are not updated yet, only fixes here.

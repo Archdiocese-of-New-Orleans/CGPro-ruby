@@ -5,13 +5,13 @@
 
 Gem::Specification.new do |s|
   s.name = %q{communigate}
-  s.version = "0.3.1"
+  s.version = "0.3.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Ricardo Hermida Ruiz"]
-  s.date = %q{2009-08-27}
+  s.authors = ["Alexey Vekshin"]
+  s.date = %q{2013-08-02}
   s.description = %q{Library to interact with CommuniGate Pro CLI interface}
-  s.email = %q{Ricardo.Ruiz@Locaweb.com.br}
+  s.email = %q{some.hren@gmail.com}
   s.files = [
     "Rakefile",
      "VERSION",
@@ -25,13 +25,13 @@ Gem::Specification.new do |s|
      "lib/specifications/ruby_to_cgp_spec.rb",
      "lib/specifications/spec_helper.rb"
   ]
-  s.homepage = %q{http://github.com/rhruiz/communigate-cli}
+  s.homepage = %q{https://github.com/veksh/CGPro-ruby}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.5}
   s.summary = %q{Interact with CommuniGatePro CLI interface}
   s.test_files = [
-    "lib/specifications/cgp_to_ruby_spec.rb",
+     "lib/specifications/cgp_to_ruby_spec.rb",
      "lib/specifications/ruby_to_cgp_spec.rb",
      "lib/specifications/spec_helper.rb"
   ]
