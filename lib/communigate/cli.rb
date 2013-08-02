@@ -80,6 +80,9 @@ module CommuniGate
       end
       @connection.sync = true
       response = @connection.gets
+      if responce.nil?
+         raise CommuniGate::GeneralException.new("Host #{@_params[:hostname]} closed connection, check PWD listener permissions there")
+      end
       match = response.match(/(\<.*\@*\>)/)
       if (match.size > 0)
         @_banner_code = match.captures[0]
