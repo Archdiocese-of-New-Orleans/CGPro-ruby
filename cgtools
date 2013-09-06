@@ -1,0 +1,197 @@
+#!/opt/local/bin/ruby1.9
+# -*- coding: utf-8 -*-
+
+require 'thor'
+require 'pp'
+require 'communigate/cli'
+require "net/imap"
+
+class CgTools < Thor
+
+  DEF_DOMAIN = 'company.com'
+  CGATE_HOST = 'cgate.company.com'
+  CGATE_USER = 'admin@cgate.company.com'
+  CGATE_PASS = 'verysecret'
+  MAX_OBJECTS = 1000
+
+  desc "getdetail ADDR [-(grs)]", "get detailed info on ADDR on cgate server (with cgate API)"
+  method_option :groups,     :aliases => '-g', :type => :boolean, :desc => 'groups/lists'
+  method_option :roster,     :aliases => '-r', :type => :boolean, :desc => 'roster'
+  method_option :settings,   :aliases => '-s', :type => :boolean, :desc => 'dump all account settings'
+  # method_option :boxes,      :aliases => '-b', :type => :boolean, :desc => 'mailboxes'
+  # method_option :info,       :aliases => '-i', :type => :string,  :desc => 'dump account state information'
+  def getdetail(short_addr)
+
+    addr = "#{short_addr}@#{DEF_DOMAIN}"
+
+    cli = CommuniGate::Cli.new(:hostname => CGATE_HOST, 
+                               :username => CGATE_USER,
+                               :password => CGATE_PASS)
+    begin
+      begin
+        settings = cli.getaccountsettings(addr)
+      rescue CommuniGate::GeneralException => exp
+        if exp.message == "The CG server returned an error: '513 unknown user account'"
+          STDERR.puts "no such account"
+          alike_names = cli.listdomainobjects(DEF_DOMAIN, "FILTER", short_addr, "50",
+                                              'ACCOUNTS', 'ALIASES', 'FORWARDERS')[1]
+          if alike_names.has_key? short_addr
+            # ref: 'macnt' for ACCOUNTS, [target] for ALIASES, [[target]] for FORWARDER
+            ref = alike_names[short_addr][0]
+            case ref
+            when String then STDERR.puts "... it is actually an alias for #{ref}"
+            when Array then STDERR.puts "... it is actually a forwarder to #{ref[0]}"
+            else STDERR.puts "it is something strange that cannot happen (#{ref})"
+            end
+          elsif cli.listgroups(DEF_DOMAIN).include? short_addr
+            STDERR.puts "... it is actually a group"
+            gr = cli.getgroup(addr)
+            puts "RealName: #{gr['RealName']}"
+            if gr.has_key? 'Members'
+              puts "Members:"
+              gr['Members'].each {|m| puts "  " + m}
+            end
+          elsif !alike_names.empty?
+            STDERR.puts "there are some names like it"
+            alike_names.each_key {|k| STDERR.puts k}
+          else
+            STDERR.puts "and nothing like it found"
+            exit 1
+          end
+        else
+          STDERR.puts "error: #{exp.message}"
+        end
+        exit 1
+      end
+      # basic info (or full dump with '--settings')
+      settings.delete('Password')
+      keys_to_print = options.settings? ? settings.keys : %w(RealName Title ou EmpNumber)
+      keys_to_print.each do |k|
+        printf("%-10s: %-s\n", k, settings[k]) if settings.has_key? k
+      end
+      # aliases: print always
+      aliases = cli.getaccountaliases(addr)
+      puts "aliases   : " + aliases.join(', ') unless aliases.empty?
+      # forwarders: must look up membership (one round-trip)
+      all_forw = cli.listdomainobjects(DEF_DOMAIN, MAX_OBJECTS.to_s, 'FORWARDERS')[1]
+      forwarders = all_forw.reduce([])  {|res, (k, v)| res << k if v[0][0] == short_addr; res}
+      puts "forwarders: " + forwarders.join(', ') unless forwarders.empty?
+      # lists/groups: must test each one separately; take aliases in account too
+      if options.groups?
+        groups = []
+        cli.listgroups(DEF_DOMAIN).each do |gname|
+          ginfo = cli.getgroup("#{gname}@#{DEF_DOMAIN}")
+          next unless ginfo.has_key? "Members"
+          groups << gname if ginfo["Members"].include? short_addr
+          aliases.each {|a| groups << "#{gname} (as #{a})" if ginfo["Members"].include? a}
+        end
+        puts "groups    : " + groups.join(', ') unless groups.empty?
+      end
+      # roster: our firends (lets think that friendship is always mutual)
+      if options.roster?
+        friends = cli.roster(addr, {'what' => 'List'}).keys.map {|v| v.gsub("@#{DEF_DOMAIN}", '')}
+        puts "friends   : " + friends.join(', ') unless friends.empty?
+        #friend_ofs = []
+        #cli.listaccounts(DEF_DOMAIN).each_key do |u|
+        #  friend_ofs << u if cli.roster("#{u}@#{DEF_DOMAIN}", {'what' => 'List'}).keys.include? addr
+        #end
+        #puts "friend of : " + friend_ofs.join(', ') unless friend_ofs.empty?
+      end
+    rescue CommuniGate::GeneralException, CommuniGate::DataException => exp
+      STDERR.puts "error: #{exp.message}"
+    ensure
+      cli.disconnect()
+    end
+#    # all info: long
+#    cli.getaccountinfo(''user.name@company.com')
+#    # boxes
+#    cli.listmailboxes('user.name@company.com').keys.each {|b| puts Net::IMAP.decode_utf7(b)}
+#    cli.getmailboxinfo('user.name@company.com', "MAILBOX", "INBOX")
+  end
+
+  desc "deluser ADDR", "del ADDR record from cgate server (including groups and rosters)"
+  def delnew(short_addr)
+    addr = "#{short_addr}@#{DEF_DOMAIN}"
+
+    cli = CommuniGate::Cli.new(:hostname => CGATE_HOST, 
+                               :username => CGATE_USER,
+                               :password => CGATE_PASS)
+
+    begin
+
+      aliases = cli.getaccountaliases(addr)
+      puts "aliases: " + aliases.join(', ') unless aliases.empty?
+
+      cli.listgroups(DEF_DOMAIN).each do |gname|
+        gname_full = "#{gname}@#{DEF_DOMAIN}"
+        ginfo = cli.getgroup(gname_full)
+        next unless ginfo.has_key? "Members"
+        changed = false
+        if ginfo["Members"].include? short_addr
+          puts "- group: #{gname}"
+          ginfo["Members"].delete(short_addr)
+          changed = true
+        end
+        # alias could be a member of some list too (lets neglect forwarders for now)
+        aliases.each do |alias_short_addr|
+          if ginfo["Members"].include? alias_short_addr
+            puts "- group: #{gname} (as #{alias_short_addr})"
+            ginfo["Members"].delete(alias_short_addr)
+            changed = true
+          end
+        end
+        cli.setgroup(gname_full, ginfo) if changed
+      end
+
+      # assume that aliases could not be friends
+      cli.listaccounts(DEF_DOMAIN).each_key do |other_short_addr|
+        other_addr = "#{other_short_addr}@#{DEF_DOMAIN}"
+        if cli.roster(other_addr, {'what' => 'List'}).keys.include? addr
+          puts "- friend of: #{other_short_addr}"
+          cli.roster(other_addr, {'what' => 'remove', 'peer' => addr})
+        end
+      end
+
+      cli.deleteaccount(addr)
+
+    rescue CommuniGate::GeneralException => exp
+      STDERR.puts "cgate error: #{exp.message}"
+    ensure
+      cli.disconnect()
+    end
+    puts "#{addr} deleted"
+  end
+
+
+  desc "blacklist [-c]", "get or clear a list of blacklisted IPs from server"
+  method_option :clear, :aliases => '-c', :type => :boolean, :desc => 'clear list, enabling them all back'
+  def blacklist()
+
+    cli = CommuniGate::Cli.new(:hostname => CGATE_HOST, 
+                               :username => CGATE_USER,
+                               :password => CGATE_PASS)
+
+    begin
+      # CSV like "[10.4.18.4]-830, ...", number is remaining seconds
+      blacklist = cli.getTempBlacklistedIPs()
+      if blacklist.empty?
+        puts "no blacklisted IPs"
+      else
+        puts blacklist
+        if options.clear?
+          # clear by setting remaining time to 1
+          clist = blacklist.gsub(/-\d+/, "-1")
+          cli.setTempBlacklistedIPs(clist)
+          puts "cleared"
+        end
+      end
+    rescue CommuniGate::GeneralException => exp
+      STDERR.puts "cgate error: #{exp.message}"
+    ensure
+      cli.disconnect()
+    end
+  end
+
+end
+
+CgTools.start(ARGV)
