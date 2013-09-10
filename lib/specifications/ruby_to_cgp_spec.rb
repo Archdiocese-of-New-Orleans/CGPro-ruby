@@ -1,5 +1,6 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__))
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..'))
+
 require 'communigate/cli'
 require 'minitest/spec'
 require 'minitest/autorun'
@@ -20,8 +21,8 @@ require 'date'
     end
 
     it "probably it should prune other control chars" do
-      CommuniGate::CliParser.to_cgp("a string with vert tab(\012 or \v)").must_equal(
-       %q{"a string with vert tab ( or )"})
+      CommuniGate::CliParser.to_cgp("a string with vert tab (\v)").must_equal(
+       %q{"a string with vert tab ()"})
     end
 
   end

@@ -79,7 +79,7 @@ module CommuniGate
         if output =~ /^[A-Za-z0-9]+$/
           output
         elsif output =~ /([[:cntrl:]])/
-          output.gsub!(/([[:cntrl:]])/m){ |i| "\\" + i[0].to_s.rjust(3,"0"); }
+          output = output.gsub("\t", "\\t").gsub("\n", "\\n").gsub(/[[:cntrl:]]/, "")
           %Q{"#{output}"}
         else
           output.inspect
