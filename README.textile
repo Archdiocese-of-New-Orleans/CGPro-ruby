@@ -3,8 +3,6 @@ h1. Credits
 This fork of ruby-cg (originally by William Pratt, later by Ricardo Ruiz) is modified to support
 ruby 1.9 unicode, fix a few bugs etc.
 
-Tests are not updated yet, only fixes here.
-
 Also included: 'cgtools' script, filling some gaps in CGate web administration, namely 
 - getting info about user: lists user is member of, friends and roster membership
 - deleting user: cleaning other users rosters too
