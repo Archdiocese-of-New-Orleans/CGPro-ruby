@@ -17,7 +17,7 @@ end
 describe "control chars" do
   it "should escape tab and newline" do
     CommuniGate::CliParser.to_cgp("a string with tabs (\t) and newline (\n)").must_equal(
-     %q{"a string with tabs (\\t) and newline (\\n)"})
+     %q{"a string with tabs (\\t) and newline (\\e)"})
   end
 
   it "probably it should prune other control chars" do
@@ -50,7 +50,6 @@ describe :strings do
   it "should escape backslashes" do
     CommuniGate::CliParser.to_cgp("string with backslash (\\)").must_equal %q{"string with backslash (\\\\)"}
   end
-
 
 end
 

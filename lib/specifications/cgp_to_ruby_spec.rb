@@ -13,13 +13,6 @@ describe :numerics do
   end
 end
 
-describe "control chars" do
-  it "should convert to CGP escaped" do
-    CommuniGate::CliParser.to_ruby(%q{"a\009string\009with\009tabs\000"}).
-      must_equal "a\tstring\twith\ttabs\0"
-  end
-end
-
 describe "IP Addresses" do
   it "should convert CGP ips to IPAddr objects" do
     CommuniGate::CliParser.to_ruby('#I[192.168.1.1]').
@@ -38,9 +31,19 @@ describe :strings do
   end
 
   it "should convert quoted strings to escaped quoted strings" do
-    CommuniGate::CliParser.to_ruby(%q{"a \"quoted\" string"}).must_equal("a \"quoted\" string")
     CommuniGate::CliParser.to_ruby(%q{"a \"quoted\" string"}).must_equal(%q{a "quoted" string})
   end
+
+  it "should convert control chars to CGP escaped" do
+    CommuniGate::CliParser.to_ruby(%q{"a\009string\009with\009tabs\000"}).
+      must_equal "a\tstring\twith\ttabs\0"
+  end
+
+  it "should pass EOL mark unchanged" do
+    CommuniGate::CliParser.to_ruby(%q{"string one\estring two"}).
+      must_equal %q{string one\estring two}
+  end
+
 end
 
 describe :time do

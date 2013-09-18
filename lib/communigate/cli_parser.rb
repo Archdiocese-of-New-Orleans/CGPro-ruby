@@ -79,7 +79,7 @@ module CommuniGate
         if output =~ /^[A-Za-z0-9]+$/
           output
         elsif output =~ /([[:cntrl:]])/
-          output = output.gsub("\t", "\\t").gsub("\n", "\\n").gsub(/[[:cntrl:]]/, "")
+          output = output.gsub("\t", "\\t").gsub("\n", "\\e").gsub(/[[:cntrl:]]/, "")
           %Q{"#{output}"}
         else
           output.inspect
@@ -178,7 +178,7 @@ module CommuniGate
         c = @data[@marker, 1]
         if quoted #quoted string
           if c == '\\'
-            if @data[@marker, 2] =~ /\\\"/
+            if @data[@marker, 2] == '\\"'
               c = "\""
               @marker += 1
             elsif @data[@marker + 1, 3] =~ /(?:\\|\d\d\d)/
