@@ -73,8 +73,7 @@ class CgTools < Thor
       aliases = cli.getaccountaliases(addr)
       puts "aliases   : " + aliases.join(', ') unless aliases.empty?
       # forwarders: must look up membership (one round-trip)
-      all_forw = cli.listdomainobjects(DEF_DOMAIN, MAX_OBJECTS.to_s, 'FORWARDERS')[1]
-      forwarders = all_forw.reduce([])  {|res, (k, v)| res << k if v[0][0] == short_addr; res}
+      forwarders = cli.findforwarders(DEF_DOMAIN, 'TO', short_addr)
       puts "forwarders: " + forwarders.join(', ') unless forwarders.empty?
       # lists/groups: must test each one separately; take aliases in account too
       if options.groups?
@@ -82,7 +81,15 @@ class CgTools < Thor
         cli.listgroups(DEF_DOMAIN).each do |gname|
           ginfo = cli.getgroup("#{gname}@#{DEF_DOMAIN}")
           next unless ginfo.has_key? "Members"
-          groups << gname if ginfo["Members"].include? short_addr
+          # mention forwarders in group names
+          if ginfo["Members"].include? short_addr
+            if !(group_forwarders = cli.findforwarders(DEF_DOMAIN, 'TO', gname)).empty?
+              groups << gname + " (aka #{group_forwarders.join(', ')})"
+            else
+              groups << gname
+            end
+          end
+          # lets think that forwarders could not be group members for now :)
           aliases.each {|a| groups << "#{gname} (as #{a})" if ginfo["Members"].include? a}
         end
         puts "groups    : " + groups.join(', ') unless groups.empty?
@@ -150,6 +157,11 @@ class CgTools < Thor
           puts "- friend of: #{other_short_addr}"
           cli.roster(other_addr, {'what' => 'remove', 'peer' => addr})
         end
+      end
+
+      if !(forwarders = cli.findforwarders(DEF_DOMAIN, 'TO', short_addr)).empty?
+        puts "forwarders: " + forwarders.join(', ')
+        forwarders.each {|f| cli.deleteforwarder("#{f}@#{DEF_DOMAIN}")}
       end
 
       cli.deleteaccount(addr)
