@@ -39,9 +39,9 @@ describe :strings do
       must_equal "a\tstring\twith\ttabs\0"
   end
 
-  it "should pass EOL mark unchanged" do
-    CommuniGate::CliParser.to_ruby(%q{"string one\estring two"}).
-      must_equal %q{string one\estring two}
+  it "should convert escaped newline to \\e" do
+    CommuniGate::CliParser.to_ruby(%q{"string one\\estring two"}).
+      must_equal "string one\estring two"
   end
 
 end

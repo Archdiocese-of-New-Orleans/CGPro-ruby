@@ -20,9 +20,9 @@ describe "control chars" do
      %q{"a string with tabs (\\t) and newline (\\e)"})
   end
 
-  it "probably it should prune other control chars" do
+  it "probably it should escape other control chars" do
     CommuniGate::CliParser.to_cgp("a string with vert tab (\v)").must_equal(
-     %q{"a string with vert tab ()"})
+     %q{"a string with vert tab (\\v)"})
   end
 
 end

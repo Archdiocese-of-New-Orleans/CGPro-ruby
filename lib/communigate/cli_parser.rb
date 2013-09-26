@@ -79,8 +79,7 @@ module CommuniGate
         if output =~ /^[A-Za-z0-9]+$/
           output
         elsif output =~ /([[:cntrl:]])/
-          output = output.gsub("\t", "\\t").gsub("\n", "\\e").gsub(/[[:cntrl:]]/, "")
-          %Q{"#{output}"}
+          output.gsub("\n", "\e").inspect.gsub(/\\u\d{4}/) {|m| "\\u'#{m[2..5]}'"}
         else
           output.inspect
         end
@@ -180,6 +179,9 @@ module CommuniGate
           if c == '\\'
             if @data[@marker, 2] == '\\"'
               c = "\""
+              @marker += 1
+            elsif  @data[@marker, 2] == '\\e'
+              c = "\e"
               @marker += 1
             elsif @data[@marker + 1, 3] =~ /(?:\\|\d\d\d)/
               @marker += 1
