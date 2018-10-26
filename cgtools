@@ -204,6 +204,25 @@ class CgTools < Thor
     end
   end
 
+  desc "kill ADDR", "kill all sessions for account"
+  def kill(short_addr)
+    addr = "#{short_addr}@#{DEF_DOMAIN}"
+    begin
+
+      cli = CommuniGate::Cli.new(:hostname => LdapDirs::Cgate_new[:host],
+                                 :username => LdapDirs::Cgate_new[:user],
+                                 :password => LdapDirs::Cgate_new[:pass])
+
+      cli.killaccountsessions(addr)
+      puts "killed"
+
+    rescue CommuniGate::GeneralException => exp
+      STDERR.puts "cgate error: #{exp.message}"
+    ensure
+      cli.disconnect()
+    end
+  end
+
 end
 
 CgTools.start(ARGV)
