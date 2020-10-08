@@ -1,4 +1,5 @@
 require 'socket'
+require 'openssl'
 require 'digest/md5'
 require 'communigate/cli_parser'
 require 'communigate/general_exception'
@@ -22,6 +23,7 @@ module CommuniGate
         unless params[:password]
       params[:port]  ||= 106
       params[:debug] ||= false
+      params[:ssl] ||= false
       @_params = params
       @data = String.new
       @marker = 0
@@ -37,18 +39,26 @@ module CommuniGate
     # finalizer that handles clean disconnect after object destruction.
     def disconnect
       _logout
-      @connection.close
+      if @_params[:ssl]
+        @ssl_connection.sysclose
+      else
+        @connection.close
+      end
     end
 
     def _reconnect
-      @connection.close
+      if @_params[:ssl]
+        @ssl_connection.sysclose
+      else
+        @connection.close
+      end
       _connect
       _login
     end
 
     def _send(command)
       STDERR.puts "#{command}" if @_params[:debug]
-      @connection.print("#{command}\n")
+      @_params[:ssl] ? @ssl_connection.puts("#{command}\n") : @connection.print("#{command}\n")
       _parse_response
     end
 
@@ -79,7 +89,16 @@ module CommuniGate
           "#{@_params[:hostname]} on port #{@_params[:port]}: #{e.message}")
       end
       @connection.sync = true
-      response = @connection.gets
+      if @_params[:ssl]
+        ssl_context = OpenSSL::SSL::SSLContext.new
+        ssl_context.ssl_version = :TLSv1_2
+        @ssl_connection = OpenSSL::SSL::SSLSocket.new(@connection, ssl_context)
+        @ssl_connection.sync_close = true
+        @ssl_connection.connect
+        response = @ssl_connection.gets
+      else
+        response = @connection.gets
+      end
       if response.nil?
          raise CommuniGate::GeneralException.new("Host #{@_params[:hostname]} closed connection, check PWD listener permissions there")
       end
@@ -89,10 +108,14 @@ module CommuniGate
       end
     end
 
+    def _connection
+      @_params[:ssl] ? @ssl_connection : @connection
+    end
+
     def _gather_data
       lastline = false
       while true
-        line = @connection.gets
+        line = _connection.gets
         lastline = true if /\r$/.match(line) # data ends w/ ctrl-lf
         @data << line.strip
         break if lastline 
@@ -100,7 +123,7 @@ module CommuniGate
     end
 
     def _parse_response
-      response = @connection.gets || String.new
+      response = _connection.gets || String.new
       response.strip!
       #   	puts response
       unless response.empty?
